@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+	<title></title>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="jquery.hotkeys.js"></script>
+	<script type="text/javascript" src="key_status.js"></script>
+	<script type="text/javascript" src="sprite.js"></script>
+	<script type="text/javascript"></script>
+	<script type="text/javascript">
+	var CANVAS_WIDTH = 480,
+		CANVAS_HEIGHT = 330,
+		FPS = 30,
+		timer= null;
+
+		
+	var canvasEle = $("<canvas style='border:1px solid #ccc;' width='"+CANVAS_WIDTH + "' height='"+CANVAS_HEIGHT+"'></canvas>");
+
+	var ctx = canvasEle.get(0).getContext('2d');
+
+	var player = {
+		color: '#00A',
+		x: 220,
+		y: 270,
+		width: 32,
+		height: 32,
+		draw: function () {
+			ctx.fillStyle = this.color;
+			ctx.fillRect(this.x, this.y, this.width, this.height);
+		},
+		midPoint: function () {
+			return {
+				x: this.x + this.width/2,
+				y: this.y + this.height/2
+			}
+		},
+		shoot: function () {
+			var bulletPosition = this.midPoint();
+
+			playerBullets.push(Bullet({
+				speed: 5,
+				x: bulletPosition.x,
+				y: bulletPosition.y
+			}));
+		},
+		explode: function () {
+			this.active = false;
+			console.log( 'i am gua le' );
+			clearInterval(timer);
+			if ( confirm('重新开始') ) {
+				
+			};
+		}
+	};
+
+	var keydown = {
+		left: false,
+		right: false
+	}
+
+	// var keycodeMap = {
+	// 	37: 'left',
+	// 	39: 'right',
+	// 	38: 'top',
+	// 	32: 'space'
+	// };	
+	
+	var playerBullets = []; //collection store the bullet
+
+	function Bullet (I) {
+		I.active = true;
+
+		I.xVelocity = 0;
+		I.yVelocity = -I.speed;
+		I.width = 3;
+		I.height = 3;
+		I.color = '#000';
+
+		I.inBounds = function () {
+			return I.x >= 0 && I.x < CANVAS_WIDTH && I.y >=0 && I.y < CANVAS_HEIGHT;
+		};
+
+		I.draw = function () {
+			ctx.fillStyle = this.color;
+			ctx.fillRect(this.x, this.y, this.width, this.height);
+		};
+
+		I.update = function () {
+			this.x += this.xVelocity;
+			this.y += this.yVelocity;
+
+			I.active = I.active && I.inBounds();
+		};
+
+		return I;
+		// 判断多个键同时按下
+	}
+
+	var enemies = [];
+	// enemies.push(Enemy());
+	function Enemy(I) {
+		I = I || {};
+
+		I.active = true;
+		I.age = Math.floor(Math.random() * 128);
+
+		I.color = '#A2B';
+
+		I.x = CANVAS_WIDTH / 4 + Math.random() * CANVAS_WIDTH/2; // 控制范围
+		I.y = 0;
+		I.xVelocity = 0;
+		I.yVelocity = 2;
+
+		I.width = 32;
+		I.height = 32;
+
+		I.sprite = Sprite('enemy');
+
+		I.inBounds = function () {
+			return I.x >= 0 && I.x <= CANVAS_WIDTH && I.y >= 0 && I.y <= CANVAS_HEIGHT;
+		};
+
+		I.draw = function () {
+			// ctx.fillStyle = this.color;
+			// ctx.fillRect(I.x, I.y, I.width, I.height);
+			this.sprite.draw(ctx, this.x, this.y );
+		};
+
+		I.update = function () {
+			this.x += this.xVelocity;
+			this.y += this.yVelocity;
+
+			this.xVelocity = 3 * Math.sin (this.age * Math.PI /64); // -3 3
+
+			this.age ++;
+
+			this.active = this.active && this.inBounds;
+		};
+
+		I.explode = function () {
+			this.active = false;
+		}
+
+		return I;
+	}
+	
+	function update() {
+		if(keydown.left) {
+			player.x -= 5;
+			// keydown.left = false;
+		}
+
+		if(keydown.right) {
+			player.x += 5;
+			// keydown.right = false;
+		}
+
+		if (keydown.space) {
+			player.shoot();
+			// keydown.space = false;
+		}
+
+		playerBullets.forEach(function (bullet) { // 更新子弹位置
+			bullet.update();
+		});
+
+		playerBullets = playerBullets.filter(function (bullet) {
+			return bullet.active;
+		});
+
+		enemies.forEach(function (enemy) {
+			enemy.update();
+		});
+
+		enemies = enemies.filter(function (enemy) {
+			return enemy.active;
+		});
+
+		if (Math.random() < 0.1) { // 十分之一的几率？
+			enemies.push(Enemy());
+		}
+
+		handleCollisions();
+		// keydown.clear();
+	}	
+
+	function collides (a, b) { // 碰撞检测
+		return a.x < b.x + b.width &&
+				a.x + a.width > b.x &&
+				a.y < b.y + b.height &&
+				a.y + a.height > b.y; //yes i know
+	}
+
+	function handleCollisions() {
+		playerBullets.forEach(function (bullet) {
+			enemies.forEach(function (enemy) {
+				if (collides(bullet, enemy)) {
+					enemy.explode();
+					bullet.active = false;
+				}
+			});
+		});
+
+		enemies.forEach(function (enemy) {
+			if (collides(enemy, player)) {
+				enemy.explode();
+				player.explode();
+			}
+		});
+	}
+	function draw() {
+		ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		player.draw();
+
+		playerBullets.forEach(function (bullet) {
+			bullet.draw();
+		});
+
+		enemies.forEach(function (enemy) {
+			enemy.draw()
+		});
+
+		// ctx.fillStyle = "#000";
+		// ctx.fillText('Sup Bro', textX, textY);
+	}		
+
+	
+
+	var init = function () {
+		canvasEle.appendTo('body');
+
+		timer = setInterval(function () { // 周期性的调用 ，循环的框架
+			update(); // 位置移动
+			draw();
+		}, 1000/FPS);
+
+		// $(document).bind('keydown', function (event) {
+		// 	var key = event.keyCode;
+		// 	console.log( event );
+		// 	keydown[keycodeMap[key]] = true;
+		// });
+
+		// $(document).bind('keyup', function (event) {
+		// 	var key = event.keyCode;
+		// 	keydown[keycodeMap[key]] = false;
+		// });
+		
+	};
+
+	$(document).ready(function () {
+		init();
+	});
+
+	
+	
+
+	
+	
+
+	
+
+
+
+
+	</script>
+</head>
+<body>
+	
+</body>
+</html>;

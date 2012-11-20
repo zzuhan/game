@@ -1,0 +1,95 @@
+< !DOCTYPE HTML > < html lang = "en-US" > < head > < meta charset = "UTF-8" > < title > DHTML sprite一个移动的图形对象 < /title>
+	<style type="text/css
+">
+	#container {
+		position: relative;
+		-webkit-transition: 1s ease;
+	}
+	#container>div:hover {
+		width: 200px;
+	}
+
+	</style>
+	<script type="
+text / javascript " src="
+jquery.js "></script>
+	<script type="
+text / javascript ">
+	var DHTMLSprite = function (params) {
+		var width = params.width,
+			height = params.height,
+			imageWidth = params.imagesWidth,
+			$element = params.$drawTarget.append('<div/>').find(':last'), // find(':last ') 定位到element身上
+			elemStyle = $element[0].style,
+			mathFloor = Math.floor;
+
+		$element.css({
+			position: 'absolute', left: -9999,
+			width: width,
+			height: height,
+			background: 'url(' + params.images + ')'
+		});
+
+		var that = {
+			draw: function (x, y) {
+				elemStyle.left = x + 'px';
+				elemStyle.top = y + 'px';
+			},
+			changeImage: function (index) {
+				index *= width;
+				var vOffset = -mathFloor(index / imageWidth) * height;
+				var hOffset =  -index % imageWidth;
+
+				elemStyle.backgroundPosition = hOffset + 'px ' + vOffset + 'px';
+			},
+			show: function () {
+				elemStyle.display = 'block';
+			},
+			hide: function () {
+				elemStyle.display = 'none';
+			},
+			destroy: function () {
+				$element.remove();
+			},
+		};
+		return that;
+	}
+	function init () {
+		var $container = $('#container'),
+			index = 0,
+			sprite1,
+
+		sprite1 = new DHTMLSprite({
+			width: 32,
+			height: 32,
+			images: 'invaders.png',
+			imagesWidth: 256,
+			$drawTarget: $container
+		});
+
+		sprite1.draw(100, 100);
+
+		var process = (function () {
+			// process;
+		})();
+		setInterval(function () {
+			index ++;
+
+			sprite1.changeImage(index);
+		}, 100);
+	};
+	window.onload = init;
+
+	</script>
+</head>
+<body>
+	<div id="
+container " style="
+width: 500px;
+height: 500px;
+border: 1px solid # ccc;
+margin: 0 auto;
+">
+	</div>
+</body>
+</html>;

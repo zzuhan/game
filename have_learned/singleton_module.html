@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+	<title></title>
+	<script type="text/javascript">
+	function isFunction(fn){
+		return typeof fn === 'function';
+	}
+	// 处理队列 用到了单例模式 这也是写组建的一种方法
+	// 组件，将细节隐藏，只暴露接口	
+	var queue = (function () {
+		var queueList = [];
+
+		return {
+			add: function (fn) {
+				queueList.push(fn);
+			},
+			pop: function () {
+				return queueList.shift();
+			}
+		}
+	})();
+
+	// 上述，只能生成一次，改进
+	var Queue = (function () {
+		var queueList = [];
+
+		return function () {
+
+			this.add = function (fn) {
+				queueList.push(fn);
+			}
+			this.pop = function () {
+				return queueList.shift();
+			}
+		};
+	})();
+
+	var queue1= new Queue();
+	var queue2 = new Queue();
+
+	queue1.add(1);
+	queue2.add(2);
+
+	console.log( queue2.pop() );
+
+	////////////////////////////////////////////////////////Next  模块考虑继承 复用
+	var subModule = (function (parent) {
+		var parent = isFunction(parent) ? new parent : parent,
+			private_var;
+
+		// init code
+		// public var and function
+		parent.pub_var = 1;
+		parent.pub_func = function() {};
+
+		return parent;
+	})(parentModel || {});
+
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
