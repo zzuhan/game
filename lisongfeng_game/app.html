@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>游戏框架 App</title>
+	<script type="text/javascript">
+	const FPS = 30;
+	var x = 0,
+		y = 0,
+		xDirection = 1,
+		yDirection = 1;
+
+	var image = new Image();
+	image.src = 'jsplatformer1-smiley.jpg';
+
+	var canvas = null,
+		ctx = null;
+
+	window.onload = init;
+
+	function init(){
+		canvas = document.getElementById('canvas');
+		console.log( canvas );
+		ctx = canvas.getContext('2d');
+		setInterval(draw, 1000/FPS);
+	}
+
+	function draw () {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(image, x, y);
+		x += xDirection;
+		y += yDirection;
+
+		if (x >= 450) {
+			x = 450;
+			xDirection = -1;
+		} else if (x <= 0) {
+			x = 0;
+			xDirection = 1;
+		}
+
+		if (y >= 250 ) {
+			y = 250;
+			yDirection = -1;
+		} else if (y <=0) {
+			y=0;
+			yDirection = 1;
+		}
+	}
+
+	function move() {
+
+	}
+
+	function manager() {
+		
+	}
+
+
+	</script>
+	<script type="text/javascript">
+	
+
+
+
+
+
+
+
+
+
+
+	</script>
+
+</head>
+<body>
+	<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
